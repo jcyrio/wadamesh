@@ -3206,6 +3206,14 @@ void MyMesh::sendFloodScoped(const mesh::GroupChannel& channel, mesh::Packet* pk
 void MyMesh::onMessageRecv(const ContactInfo &from, mesh::Packet *pkt, uint32_t sender_timestamp,
                            const char *text) {
   markConnectionActive(from); // in case this is from a server, and we have a connection
+  // BaseChatMesh sends the ACK after this callback. Suppress only app delivery;
+  // returning here must not stop another ACK if the previous one was lost.
+  const size_t text_len = strlen(text);
+  uint8_t digest[8];
+  mesh::Utils::sha256(digest, sizeof(digest),
+                      reinterpret_cast<const uint8_t*>(text), text_len);
+  if (incoming_private_messages.seenOrRemember(from.id.pub_key, sender_timestamp,
+                                               digest, text_len, _ms->getMillis())) return;
   queueMessage(from, TXT_TYPE_PLAIN, pkt, sender_timestamp, NULL, 0, text);
 #if defined(ESP32) && defined(MULTI_TRANSPORT_COMPANION)
   mqtt_bridge.publishDM(from.name, from.id.pub_key, pkt->getSNR(), pkt->path_len, sender_timestamp, text);

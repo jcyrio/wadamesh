@@ -109,6 +109,7 @@
 #include <helpers/BaseChatMesh.h>
 #include <helpers/TransportKeyStore.h>
 #include "RegionRegistry.h"
+#include "helpers/IncomingMessageCache.h"
 
 /* -------------------------------------------------------------------------------------- */
 
@@ -1486,6 +1487,7 @@ private:
   };
   #define EXPECTED_ACK_TABLE_SIZE 8
   AckTableEntry expected_ack_table[EXPECTED_ACK_TABLE_SIZE]; // circular table
+  IncomingMessageCache incoming_private_messages;
   int next_ack_idx;
   AckTableEntry* findPendingTextMessage(const uint8_t text_fingerprint[MAX_HASH_SIZE]);
   void clearExpectedAck(AckTableEntry& entry, bool cancel_retry);
